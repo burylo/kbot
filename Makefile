@@ -42,7 +42,7 @@ windows: format get
 
 
 image:
-	docker build . -t ${REGISTRY}/${APP}:${VERSION}-${TARGETARCH}
+	docker build . --target ${TARGETOS} -t ${REGISTRY}/${APP}:${VERSION}-${TARGETARCH}
 
 image_linux:
 	$(call image_builder,linux,amd64)
@@ -61,3 +61,6 @@ push:
 
 clean:
 	docker rmi ${REGISTRY}/${APP}:${VERSION}-${TARGETARCH}
+
+clean_arm:
+	docker rmi ${REGISTRY}/${APP}:${VERSION}-arm64
