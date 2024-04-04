@@ -1,9 +1,12 @@
 FROM golang:1.22 as builder
 
+ARG os
+ENV TARGETOS=${os}
+
 WORKDIR /go/src/app
 COPY . .
 
-RUN make build
+RUN make ${os}
 
 FROM scratch
 WORKDIR /
