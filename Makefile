@@ -1,15 +1,15 @@
 APP=$(shell basename $(shell git remote get-url origin))
 REGISTRY=yburylo13
 VERSION=$(shell git describe --tags --abbrev=0)-$(shell git rev-parse --short HEAD)
-DEFAULTOS=linux # linux darwin windows
-DEFAULTARCH=amd64 # arm64
+TARGETOS=linux # linux darwin windows
+TARGETARCH=amd64 # arm64
 
 define code_builder
 	CGO_ENABLED=0 GOOS=$1 GOARCH=$2 go build -v -o kbot -ldflags "-X="github.com/burylo/kbot/cmd.appVersion=${VERSION}
 endef
 
 define image_builder
-	docker build . --platform $1/$2 -t ${REGISTRY}/${APP}:${VERSION}-$1-$2 --build-arg os=$1
+	docker build . --target $1 -t ${REGISTRY}/${APP}:${VERSION}-$2 --build-arg os=$1 --build-arg arch=$2
 endef
 
 format:
@@ -26,10 +26,13 @@ get:
 
 
 build: format get
-	CGO_ENABLED=0 GOOS=${DEFAULTOS} GOARCH=${DEFAULTARCH} go build -v -o kbot -ldflags "-X="github.com/burylo/kbot/cmd.appVersion=${VERSION}
+	CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build -v -o kbot -ldflags "-X="github.com/burylo/kbot/cmd.appVersion=${VERSION}
 
 linux: format get
 	$(call code_builder,linux,amd64)
+
+linux_arm: format get
+	$(call code_builder,linux,arm64)
 
 macos: format get
 	$(call code_builder,darwin,arm64)
@@ -44,9 +47,11 @@ image:
 image_linux:
 	$(call image_builder,linux,amd64)
 
+image_linux_arm:
+	$(call image_builder,linux_arm,arm64)
+
 image_macos:
-	docker build . --platform linux/arm64 -t ${REGISTRY}/${APP}:${VERSION}-macos-arm64 --build-arg os=macos
-#	$(call image_builder,macos,arm64)
+	@echo "Sorry, but there is no Docker image for MacOS :("
 
 image_windows:
 	$(call image_builder,windows,amd64)
@@ -55,4 +60,5 @@ push:
 	docker push ${REGISTRY}/${APP}:${VERSION}-${TARGETARCH}
 
 clean:
-	rm -rf kbot
+	docker rmi ${REGISTRY}/${APP}:${VERSION}-amd64
+	docker rmi ${REGISTRY}/${APP}:${VERSION}-arm64
