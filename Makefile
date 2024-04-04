@@ -60,5 +60,4 @@ push:
 	docker push ${REGISTRY}/${APP}:${VERSION}-${TARGETARCH}
 
 clean:
-	docker rmi ${REGISTRY}/${APP}:${VERSION}-amd64
-	docker rmi ${REGISTRY}/${APP}:${VERSION}-arm64
+	docker rmi ${REGISTRY}/${APP}:${VERSION}-${TARGETARCH}
