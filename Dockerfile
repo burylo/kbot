@@ -1,5 +1,5 @@
 FROM --platform=linux quay.io/projectquay/golang:1.22 as builder
-ARG os
+ARG os=linux
 ENV TARGETOS=${os}
 
 WORKDIR /go/src/app
