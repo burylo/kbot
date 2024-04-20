@@ -21,9 +21,9 @@ spec:
         {{- toYaml . | nindent 8 }}
         {{- end }}
     spec:
-    dnsConfig:
-      nameservers:
-        - 1.1.1.1
+      dnsConfig:
+        nameservers:
+          - 1.1.1.1
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
