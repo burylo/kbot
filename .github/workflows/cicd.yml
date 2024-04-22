@@ -7,9 +7,6 @@ on:
 
 jobs:
     ci:
-        permissions:
-            contents: 'read'
-            id-token: 'write'
       
         name: CI
         runs-on: ubuntu-latest
