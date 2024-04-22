@@ -22,7 +22,7 @@ jobs:
               uses: google-github-actions/auth@v2
               with:
                     project_id: wise-coyote-417310 
-                    service_account_key: ${{ secrets.GITHUB_TOKEN }}
+                    credentials_json: ${{ secrets.GITHUB_TOKEN }}
                     export_default_credentials: true
 
             - name: Ceckout
