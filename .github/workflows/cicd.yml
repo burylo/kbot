@@ -4,12 +4,28 @@ on: push
 
 jobs:
     ci:
+        permissions:
+            contents: 'read'
+            id-token: 'write'
+      
         name: CI
         runs-on: ubuntu-latest
 
         steps:
+
+            - uses: 'actions/checkout@v4'
+      
+            - name: Set up Google Cloud SDK
+              uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
+              with:
+                    project_id: your-project-id
+                    service_account_key: ${{ secrets.GITHUB_TOKEN }}
+                    export_default_credentials: true
+
             - name: Ceckout
               uses: actions/checkout@v3
             
             - name: Run test
               run: make test
+
+            
