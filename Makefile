@@ -42,7 +42,7 @@ windows: format get
 
 
 image:
-	docker build . --target ${TARGETOS} -t ${REGISTRY}/${APP}:${VERSION}-${TARGETARCH}
+	docker build . --target ${TARGETOS} -t ${REGISTRY}/${APP}:${VERSION}-${TARGETOS}-${TARGETARCH}
 
 image_linux:
 	$(call image_builder,linux,amd64)
