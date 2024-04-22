@@ -25,10 +25,19 @@ jobs:
                     credentials_json: ${{ secrets.GCLOUD }}
                     export_default_credentials: true
 
-            - name: Ceckout
+            - name: Checkout
               uses: actions/checkout@v3
+              with:
+                fetch-depth: 0
             
             - name: Run test
               run: make test
+            
+            - name: Build&Push
+              env:
+                APP: "kbot"
+                REGISTRY: "${{ secrets.GCLOUD_REGISTRY }}"
+              run: make image push
+
 
             
