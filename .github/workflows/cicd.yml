@@ -19,7 +19,7 @@ jobs:
             - uses: 'actions/checkout@v4'
       
             - name: Set up Google Cloud SDK
-              uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
+              uses: googlecloudplatform/github-actions/setup-gcloud@v2
               with:
                     project_id: your-project-id
                     service_account_key: ${{ secrets.GITHUB_TOKEN }}
