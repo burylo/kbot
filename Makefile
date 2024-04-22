@@ -1,7 +1,7 @@
 APP=$(shell basename $(shell git remote get-url origin))
 REGISTRY?=yburylo13
 VERSION=$(shell git describe --tags --abbrev=0)-$(shell git rev-parse --short HEAD)
-TARGETOS=linux # linux darwin windows
+TARGETOS=linux
 TARGETARCH=amd64 # arm64
 
 define code_builder
@@ -42,7 +42,7 @@ windows: format get
 
 
 image:
-	docker build . --target ${TARGETOS} -t ${REGISTRY}/${APP}:${VERSION}-${TARGETARCH}
+	docker build . --target ${TARGETOS} -t ${REGISTRY}/${APP}:${VERSION}-${TARGETOS}-${TARGETARCH}
 
 image_linux:
 	$(call image_builder,linux,amd64)
