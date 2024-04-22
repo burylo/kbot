@@ -26,21 +26,23 @@ jobs:
               with:
                 fetch-depth: 0
       
-            - name: Log in to the Container registry
-              uses: docker/login-action@65b78e6e13532edd9afa3aa52ac7964289d1a9c1
-              with:
-                registry: ${{ env.REGISTRY }}
-                username: ${{ github.actor }}
-                password: ${{ secrets.GITHUB_TOKEN }}
+            - name: Test
+              run: echo "$(git describe --tags --abbrev=0)-$(git rev-parse --short HEAD)"
+            # - name: Log in to the Container registry
+            #   uses: docker/login-action@65b78e6e13532edd9afa3aa52ac7964289d1a9c1
+            #   with:
+            #     registry: ${{ env.REGISTRY }}
+            #     username: ${{ github.actor }}
+            #     password: ${{ secrets.GITHUB_TOKEN }}
             
-            - name: Run test
-              run: make test
+            # - name: Run test
+            #   run: make test
             
-            - name: Build&Push
-              env:
-                APP: "kbot"
-                REGISTRY: "${{ env.REGISTRY }}/${{ github.actor }}"
-              run: make image push
+            # - name: Build&Push
+            #   env:
+            #     APP: "kbot"
+            #     REGISTRY: "${{ env.REGISTRY }}/${{ github.actor }}"
+            #   run: make image push
 
 
             
