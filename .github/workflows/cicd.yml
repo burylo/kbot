@@ -5,27 +5,33 @@ on:
       branches:
         - develop
 
+env:
+    REGISTRY: ghcr.io
+    IMAGE_NAME: ${{ github.repository }}
+
 jobs:
     ci:
       
         name: CI
         runs-on: ubuntu-latest
+        
+        permissions:
+            contents: read
+            packages: write
 
         steps:
 
-            - uses: 'actions/checkout@v4'
-      
-            - name: Set up Google Cloud SDK
-              uses: google-github-actions/auth@v2
-              with:
-                    # project_id: wise-coyote-417310 
-                    credentials_json: ${{ secrets.GCLOUD }}
-                    # export_default_credentials: true
-
-            - name: Checkout
-              uses: actions/checkout@v3
+            - name: Checkout repository
+              uses: 'actions/checkout@v4'
               with:
                 fetch-depth: 0
+      
+            - name: Log in to the Container registry
+              uses: docker/login-action@65b78e6e13532edd9afa3aa52ac7964289d1a9c1
+              with:
+                registry: ${{ env.REGISTRY }}
+                username: ${{ github.actor }}
+                password: ${{ secrets.GITHUB_TOKEN }}
             
             - name: Run test
               run: make test
@@ -33,7 +39,7 @@ jobs:
             - name: Build&Push
               env:
                 APP: "kbot"
-                REGISTRY: "${{ secrets.GCLOUD_REGISTRY }}"
+                REGISTRY: "${{ secrets.REGISTRY }}"
               run: make image push
 
 
