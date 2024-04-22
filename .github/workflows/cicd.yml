@@ -39,7 +39,7 @@ jobs:
             - name: Build&Push
               env:
                 APP: "kbot"
-                REGISTRY: "${{ env.REGISTRY }}"
+                REGISTRY: "${{ env.REGISTRY }}/${{ github.actor }}"
               run: make image push
 
 
