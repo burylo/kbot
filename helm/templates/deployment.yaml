@@ -43,7 +43,7 @@ spec:
           volumeMounts:
           - mountPath: /dev/mem
             name: dev-mem
-          image: {{ .Values.image.repository }}/{{ .Chart.Name }}:{{ .Values.image.tag | default .Chart.AppVersion }}-{{ .Values.image.arch | default "amd64"}}
+          image: {{ .Values.image.registry }}/{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}-{{ .Values.image.arch | default "amd64"}}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           env:
           - name: {{ .Values.secret.tokenName }}
