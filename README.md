@@ -1,2 +1,2 @@
-# kbot
-Application from scratch
+# Telegram Bot
+It doesn't do anything yet
