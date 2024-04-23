@@ -9,7 +9,7 @@ define code_builder
 endef
 
 define image_builder
-	docker build . --target $1 -t ${REGISTRY}/${APP}:${VERSION}-${TARGETOS}-$2 --build-arg os=$1 --build-arg arch=$2
+	docker build . --target $1 -t ${REGISTRY}/${APP}:${VERSION}-$1-$2 --build-arg os=$1 --build-arg arch=$2
 endef
 
 format:
