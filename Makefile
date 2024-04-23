@@ -63,4 +63,4 @@ clean:
 	docker rmi ${REGISTRY}/${APP}:${VERSION}-${TARGETOS}-${TARGETARCH}
 
 clean_arm:
-	docker rmi ${REGISTRY}/${APP}:${VERSION}-arm64
+	docker rmi ${REGISTRY}/${APP}:${VERSION}-${TARGETOS}-arm64
