@@ -1,0 +1,78 @@
+image: docker:latest
+
+variables:
+  REPO: 'https://github.com/burylo/kbot'
+  BRANCH: 'main'
+  DOCKER: 'yburylo13'
+
+parameters:
+  OS:
+    type: string
+    default: linux
+    values: ['linux', 'darwin', 'windows', 'all']
+    description: 'Pick OS'
+  ARCH:
+    type: string
+    default: amd64
+    values: ['amd64', 'arm64']
+    description: 'Pick Arch'
+
+stages:
+  - clone
+  - test
+  - build
+  - image_build
+  - push
+
+clone:
+  stage: clone
+  script:
+    - echo "Clone repo"
+    - git clone --branch $BRANCH $REPO
+
+test:
+  stage: test
+  script:
+    - echo "Test Build"
+    - make test
+
+build:
+  stage: build
+  script:
+    - echo "Start build application"
+    - |
+      if [ $OS = "linux" ] && [ $ARCH = "amd64" ]; then
+        make linux
+      elif [ $OS = "linux" ] && [ $ARCH = "arm64" ]; then
+        make linux_arm
+      elif [ $OS = "windows" ] && [ $ARCH = "amd64" ]; then
+        make windows
+      elif [ $OS = "windows" ] && [ $ARCH = "arm64" ]; then
+        echo "Sorry, ARM arch not supported for windows"
+      elif [ $OS = "macos" ]; then
+        echo "Sorry, MacOS not supported"
+      fi
+
+image_build:
+  stage: image
+  script:
+    - echo "Start build docker image"
+    - |
+      if [ $OS = "linux" ] && [ $ARCH = "amd64" ]; then
+        make image_linux
+      elif [ $OS = "linux" ] && [ $ARCH = "arm64" ]; then
+        make image_linux_arm
+      elif [ $OS = "windows" ] && [ $ARCH = "amd64" ]; then
+        make image_windows
+      elif [ $OS = "windows" ] && [ $ARCH = "arm64" ]; then
+        echo "Sorry, ARM arch not supported for windows"
+      elif [ $OS = "macos" ]; then
+        echo "Sorry, MacOS not supported"
+      fi
+
+push:
+  stage: push
+  script:
+    - echo "Pushing docker image"
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - make push
