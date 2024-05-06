@@ -1,2 +1,7 @@
 **/gha-creds-*.json
 **kind
+**kind*
+**.terraform
+**.terraform*
+**.tfvars
+**.tfstate*
