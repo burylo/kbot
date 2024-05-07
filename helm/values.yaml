@@ -8,7 +8,7 @@ image:
   repository: burylo/kbot
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "v1.0.4.4-18ff12a"
+  tag: "v1.0.4.4-5d5265e"
   os: linux
   arch: amd64
 secret:
