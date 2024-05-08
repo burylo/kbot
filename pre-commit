@@ -1,0 +1,38 @@
+#!/bin/bash
+gitleaks_installer(){
+    OS=$(uname -s | awk '{print tolower($0)}')
+    ARCH=$(uname -m)
+
+    if [[ "$ARCH" =~ "aarm" ]]; then
+        ARCH="armv7"
+    fi
+
+    if [[ ! -f /usr/local/bin/gitleaks ]]; then
+        curl -s https://api.github.com/repos/gitleaks/gitleaks/releases/latest | grep browser_download_url | cut -d '"' -f 4 | grep "${OS}_${ARCH}" | wget -i - -O gitleaks.tag.gz -q
+
+        tar -xf gitleaks.tag.gz gitleaks
+
+        sudo mv gitleaks /usr/local/bin
+        rm -f gitleaks.tag.gz
+        chmod +x /usr/local/bin/gitleaks
+    fi
+}
+
+commit_checker(){
+    SCAN_RES=$(gitleaks detect --source . -v --no-banner --no-git)
+    if [ $? -ne 0 ]; then
+        echo ""
+        echo "Знайдено секрети. Відміна коміту."
+	    echo "Виправте проблему та спробуйте знову."
+        git restore --staged .
+        echo "Потенційний витік даних може бути в наступних файлах: "
+        echo "$SCAN_RES" | grep "Fingerprint" | awk '{$1=""; print $0}'
+        exit 1
+    fi
+}
+
+if [ "$(git config --get hooks.gitleaks.enable)" == "true" ]; then
+    gitleaks_installer
+
+    commit_checker
+fi
