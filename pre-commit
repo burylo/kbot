@@ -1,38 +1,53 @@
 #!/bin/bash
+
+# Функція для встановлення gitleaks
 gitleaks_installer(){
+    # Отримуємо інформацію про операційну систему та архітектуру
     OS=$(uname -s | awk '{print tolower($0)}')
     ARCH=$(uname -m)
 
+    # Перевіряємо, чи архітектура - ARMv7, та змінюємо її назву, якщо так
     if [[ "$ARCH" =~ "aarm" ]]; then
         ARCH="armv7"
     fi
 
-    if [[ ! -f /usr/local/bin/gitleaks ]]; then
+    # Перевіряємо, чи gitleaks вже встановлено
+    if [[ ! -f ./gitleaks ]]; then
+        # Завантажуємо останню версію gitleaks з GitHub
         curl -s https://api.github.com/repos/gitleaks/gitleaks/releases/latest | grep browser_download_url | cut -d '"' -f 4 | grep "${OS}_${ARCH}" | wget -i - -O gitleaks.tag.gz -q
 
+        # Розпаковуємо архів та переміщаємо gitleaks у відповідне місце
         tar -xf gitleaks.tag.gz gitleaks
-
-        sudo mv gitleaks /usr/local/bin
         rm -f gitleaks.tag.gz
-        chmod +x /usr/local/bin/gitleaks
+        chmod +x gitleaks
+        alias gitleaks=./gitleaks
     fi
 }
 
+# Функція для перевірки коміту
 commit_checker(){
+    # Виконуємо перевірку за допомогою gitleaks та зберігаємо результат
     SCAN_RES=$(gitleaks detect --source . -v --no-banner --no-git)
+    
+    # Перевіряємо код виходу gitleaks
     if [ $? -ne 0 ]; then
         echo ""
         echo "Знайдено секрети. Відміна коміту."
-	    echo "Виправте проблему та спробуйте знову."
+        echo "Виправте проблему та спробуйте знову."
+        
+        # Скасовуємо стадію додавання файлів до коміту
         git restore --staged .
+
+        # Виводимо потенційні файли з витоками даних
         echo "Потенційний витік даних може бути в наступних файлах: "
         echo "$SCAN_RES" | grep "Fingerprint" | awk '{$1=""; print $0}'
         exit 1
     fi
 }
 
+# Перевіряємо, чи увімкнено gitleaks для гілки
 if [ "$(git config --get hooks.gitleaks.enable)" == "true" ]; then
+    # Встановлюємо gitleaks та виконуємо перевірку коміту
     gitleaks_installer
-
     commit_checker
 fi
