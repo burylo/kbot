@@ -13,7 +13,7 @@ import (
 var rootCmd = &cobra.Command{
 	Use:   "kbot",
 	Short: "start telegram bot",
-	Long: `start telegram bot`,
+	Long:  `start telegram bot`,
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	// Run: func(cmd *cobra.Command, args []string) { },
