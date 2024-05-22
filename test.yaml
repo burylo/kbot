@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: kbot
+  name: kbot
+  namespace: dev
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kbot
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: kbot
+    spec:
+      containers:
+      - image: yburylo13/kbot:v1.6.0-9136dcd-linux-amd64
+        name: kbot
+        args:
+        - kbot
+        resources: {}
+        env:
+        - name: METRICS_HOST
+          value: "opentelemetry-collector.dev.svc.cluster.local:4317"
+        - name: TELE_TOKEN
+          valueFrom:
+            secretKeyRef:
+              key: token
+              name: kbot
+          
+status: {}
