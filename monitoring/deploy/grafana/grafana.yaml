@@ -11,14 +11,14 @@ data:
     - name: Prometheus
       type: prometheus
       access: proxy
-      url: http://prometheus.default.svc.cluster.local:9090
+      url: http://prometheus.dev.svc.cluster.local:9090
   loki.yaml: |
     apiVersion: 1
     datasources:
     - name: Loki
       type: loki
       access: proxy
-      url: http://loki.default.svc.cluster.local:3100
+      url: http://loki.dev.svc.cluster.local:3100
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -42,10 +42,10 @@ spec:
         - containerPort: 3000
         volumeMounts:
         - name: grafana-datasources
-          mountPath: /etc/grafana/provisioning/datasources
+          mountPath: /etc/grafana/provisioning/datasources/prometheus.yaml
           subPath: prometheus.yaml
         - name: grafana-datasources
-          mountPath: /etc/grafana/provisioning/datasources
+          mountPath: /etc/grafana/provisioning/datasources/loki.yaml
           subPath: loki.yaml
       volumes:
       - name: grafana-datasources

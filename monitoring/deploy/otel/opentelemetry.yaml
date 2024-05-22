@@ -1,4 +1,4 @@
-# kubectl apply -f https://github.com/open-telemetry/opentelemetry-operator/releases/latest/download/opentelemetry-operator.yaml
+# kubectl apply -f https://github.com/open-telemetry/opentelemetry-operator/releases/download/v0.100.0/opentelemetry-operator.yaml
 
 apiVersion: opentelemetry.io/v1beta1
 kind: OpenTelemetryCollector
@@ -6,7 +6,7 @@ metadata:
   name: opentelemetry
   namespace: dev
 spec:
-  config: |
+  config:
     receivers:
       otlp:
         protocols:
@@ -14,12 +14,11 @@ spec:
             endpoint: 0.0.0.0:4317
           http:
             endpoint: 0.0.0.0:3030
-    processors:
+    processors: {}
 
     exporters:
-      # NOTE: Prior to v0.86.0 use `logging` instead of `debug`.
-      debug:
-      loki:
+      logging: {}
+      otlphttp/loki:
         endpoint: http://loki:3100/loki/api/v1/push
       prometheus:
         endpoint: "0.0.0.0:8889"
@@ -28,10 +27,13 @@ spec:
       pipelines:
         logs:
           receivers: [otlp]
-          exporters: [loki]
+          processors: []
+          exporters: [otlphttp/loki]
         traces:
           receivers: [otlp]
+          processors: []
           exporters: [logging]
         metrics:
           receivers: [otlp]
+          processors: []
           exporters: [logging,prometheus]

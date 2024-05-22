@@ -6,11 +6,19 @@ metadata:
   name: fluentbit-config
   namespace: dev
 data:
+  parsers.conf: |
+    [PARSER]
+        Name        docker
+        Format      json
+        Time_Key    time
+        Time_Format %Y-%m-%dT%H:%M:%S.%L
+        Time_Keep   On
   fluent-bit.conf: |
     [SERVICE]
         Flush        1
         Daemon       Off
-        Log_Level    info
+        Log_Level    error
+        Parsers_File /fluent-bit/etc/parsers.conf
     [INPUT]
         Name          tail
         Path          /var/log/containers/*.log
@@ -18,12 +26,49 @@ data:
         Tag           kube.*
         DB            /var/log/flb_kube.db
         Mem_Buf_Limit 5MB
+
+    # [INPUT]
+    #     Name   tail
+    #     Path   /var/log/containers/*.log
+    #     Parser docker
+    #     Refresh_Interval 30
+    #     Ignore_Older 6h
+    #     Docker_Mode  On
+    #     Tag source.docker.<container_id>
+    #     Tag_Regex (.*\/(?<namespace>.*)_(?<pod>.*)_(?<container>.*?)-(?<id>.*?)-json\.log)
+    # [FILTER]
+    #     Name   lua
+    #     Match  source.docker.*
+    #     script /fluent-bit/bin/docker-metadata.lua
+    #     call   encrich_with_docker_metadata
     [OUTPUT]
-        Name          loki
-        Match         *
-        Host          loki.default.svc.cluster.local
-        Port          3100
-        Labels        {job="fluentbit"}
+        Name          opentelemetry
+        Match         kube.*
+        Host          opentelemetry-collector.dev.svc.cluster.local
+        Port          3030
+        metrics_uri          /v1/metrics
+        logs_uri             /v1/logs
+        traces_uri           /v1/traces
+        Log_response_payload True
+        tls                  off
+        tls.verify           off
+        # add user-defined labels
+        add_label            app fluent-bit
+        add_label            color blue
+    # [OUTPUT]
+    #     Name                 opentelemetry
+    #     Match                source.docker.*
+    #     Host                 opentelemetry-collector.dev.svc.cluster.local
+    #     Port                 3030
+    #     metrics_uri          /v1/metrics
+    #     logs_uri             /v1/logs
+    #     traces_uri           /v1/traces
+    #     Log_response_payload True
+    #     tls                  off
+    #     tls.verify           off
+    #     # add user-defined labels
+    #     add_label            app fluent-bit
+    #     add_label            color blue
 ---
 apiVersion: apps/v1
 kind: DaemonSet
@@ -41,13 +86,21 @@ spec:
     spec:
       containers:
       - name: fluentbit
-        image: fluent/fluent-bit:1.8.0
+        ports:
+        - containerPort: 3001
+        image: fluent/fluent-bit:latest
         volumeMounts:
         - name: varlog
           mountPath: /var/log
         - name: fluentbit-config
-          mountPath: /fluent-bit/etc
+          mountPath: /fluent-bit/etc/fluent-bit.conf
           subPath: fluent-bit.conf
+        - name: fluentbit-config
+          mountPath: /fluent-bit/etc/parsers.conf
+          subPath: parsers.conf
+        - name: metadata-lua
+          mountPath: /fluent-bit/bin/docker-metadata.lua
+          subPath: docker-metadata.lua
       volumes:
       - name: varlog
         hostPath:
@@ -55,3 +108,18 @@ spec:
       - name: fluentbit-config
         configMap:
           name: fluentbit-config
+      - name: metadata-lua
+        configMap:
+          name: metadata-lua
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: fluentbit
+spec:
+  selector:
+    app: fluentbit
+    namespace: dev
+  ports:
+  - port: 3001
+    targetPort: 3001
