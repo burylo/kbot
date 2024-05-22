@@ -24,11 +24,11 @@ module "github_repository" {
 }
 
 module "tls_private_key" {
-  source = "../modules/tf-hashicorp-tls-keys"
+  source = "github.com/den-vasyliev/tf-hashicorp-tls-keys"
 }
 
 module "flux_bootstrap" {
-  source            = "../modules/tf-fluxcd-flux-bootstrap"
+  source            = "github.com/den-vasyliev/tf-fluxcd-flux-bootstrap"
   github_repository = "${var.GITHUB_OWNER}/${var.FLUX_GITHUB_REPO}"
   private_key       = module.tls_private_key.private_key_pem
   config_path       = "${path.module}/kind-config" # module.gke_cluster.kubeconfig
