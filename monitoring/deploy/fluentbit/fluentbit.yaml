@@ -1,0 +1,57 @@
+# kubectl apply -f https://github.com/open-telemetry/opentelemetry-operator/releases/latest/download/opentelemetry-operator.yaml
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fluentbit-config
+  namespace: dev
+data:
+  fluent-bit.conf: |
+    [SERVICE]
+        Flush        1
+        Daemon       Off
+        Log_Level    info
+    [INPUT]
+        Name          tail
+        Path          /var/log/containers/*.log
+        Parser        docker
+        Tag           kube.*
+        DB            /var/log/flb_kube.db
+        Mem_Buf_Limit 5MB
+    [OUTPUT]
+        Name          loki
+        Match         *
+        Host          loki.default.svc.cluster.local
+        Port          3100
+        Labels        {job="fluentbit"}
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: fluentbit
+  namespace: dev
+spec:
+  selector:
+    matchLabels:
+      app: fluentbit
+  template:
+    metadata:
+      labels:
+        app: fluentbit
+    spec:
+      containers:
+      - name: fluentbit
+        image: fluent/fluent-bit:1.8.0
+        volumeMounts:
+        - name: varlog
+          mountPath: /var/log
+        - name: fluentbit-config
+          mountPath: /fluent-bit/etc
+          subPath: fluent-bit.conf
+      volumes:
+      - name: varlog
+        hostPath:
+          path: /var/log
+      - name: fluentbit-config
+        configMap:
+          name: fluentbit-config

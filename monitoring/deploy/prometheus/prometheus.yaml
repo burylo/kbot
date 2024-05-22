@@ -1,0 +1,22 @@
+# prometheus/prometheus.yaml
+apiVersion: monitoring.coreos.com/v1
+kind: Prometheus
+metadata:
+  name: prometheus
+  namespace: dev
+spec:
+  serviceAccountName: prometheus
+  serviceMonitorSelector: {}
+  resources:
+    requests:
+      memory: 400Mi
+  alerting:
+    alertmanagers:
+      - namespace: default
+        name: alertmanager
+        port: web
+  version: v2.22.0
+  scrapeConfigs:
+    - job_name: 'otel-collector'
+      static_configs:
+        - targets: ['otel-collector.default.svc.cluster.local:8888']
