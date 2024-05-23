@@ -15,5 +15,9 @@ secret:
   name: kbot
   tokenKey: token
   tokenName: TELE_TOKEN
+monitoring:
+  name: METRICS_HOST
+  host: opentelemetry-collector.dev.svc.cluster.local
+  port: 4317
 serviceAccount:
   create: false
