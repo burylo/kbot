@@ -15,7 +15,7 @@ var appVersion = "Version"
 var versionCmd = &cobra.Command{
 	Use:   "version",
 	Short: "application version",
-	Long: `Application version`,
+	Long:  `Application version`,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println(appVersion)
 	},
