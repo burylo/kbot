@@ -8,12 +8,16 @@ image:
   repository: burylo/kbot
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "v1.6.1-ee871c4"
+  tag: "v1.6.2-b23afe1"
   os: linux
   arch: amd64
 secret:
   name: kbot
   tokenKey: token
   tokenName: TELE_TOKEN
+monitoring:
+  name: METRICS_HOST
+  host: opentelemetry-collector.dev.svc.cluster.local
+  port: 4317
 serviceAccount:
   create: false
