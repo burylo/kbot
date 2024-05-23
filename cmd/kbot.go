@@ -25,7 +25,6 @@ var (
 	TeleToken = os.Getenv("TELE_TOKEN")
 	// MetricsHost exporter host:port
 	MetricsHost = os.Getenv("METRICS_HOST")
-	count       = 0
 )
 
 // Initialize OpenTelemetry
@@ -57,9 +56,11 @@ func initMetrics(ctx context.Context) {
 	otel.SetMeterProvider(mp)
 }
 
-func conter() {
+func counter(ctx context.Context) {
+	meter := otel.GetMeterProvider().Meter("kbot_counter")
+	count, _ := meter.Int64Counter("kbot_counter")
 	// Add a value of 1 to the Int64Counter
-	count++
+	count.Add(ctx, 1)
 }
 
 // kbotCmd represents the kbot command
@@ -92,7 +93,7 @@ to quickly create a Cobra application.`,
 		kbot.Handle(telebot.OnText, func(m telebot.Context) error {
 			logger.Info().Str("Payload", m.Text()).Msg(m.Message().Payload)
 			payload := m.Message().Payload
-			conter()
+			counter(context.Background())
 			switch payload {
 			case "hello":
 				err = m.Send(fmt.Sprintf("Hello, I'm kbot %s!", appVersion))

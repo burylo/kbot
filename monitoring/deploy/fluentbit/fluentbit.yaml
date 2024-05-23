@@ -26,24 +26,34 @@ data:
         Tag           kube.*
         DB            /var/log/flb_kube.db
         Mem_Buf_Limit 5MB
+        Skip_Long_Lines On
 
+    [INPUT]
+        Name   tail
+        Path   /var/log/containers/kbot-*.log
+        Parser docker
+        Refresh_Interval 30
+        Ignore_Older 6h
+        Docker_Mode  On
+        Tag kube.dev.kbot.*
     # [INPUT]
-    #     Name   tail
-    #     Path   /var/log/containers/*.log
-    #     Parser docker
-    #     Refresh_Interval 30
-    #     Ignore_Older 6h
-    #     Docker_Mode  On
-    #     Tag source.docker.<container_id>
-    #     Tag_Regex (.*\/(?<namespace>.*)_(?<pod>.*)_(?<container>.*?)-(?<id>.*?)-json\.log)
-    # [FILTER]
-    #     Name   lua
-    #     Match  source.docker.*
-    #     script /fluent-bit/bin/docker-metadata.lua
-    #     call   encrich_with_docker_metadata
+    #     Name            tail
+    #     Path            /var/log/containers/*_kbot_*.log
+    #     Tag             kbot.*
+    #     Parser          docker
+    #     DB              /var/log/flb_kube.db
+    #     Mem_Buf_Limit   5MB
+    #     Skip_Long_Lines On
+
+    [FILTER]
+        Name   lua
+        Match  kube.dev.kbot.*
+        script /fluent-bit/bin/docker-metadata.lua
+        call   encrich_with_docker_metadata
+
     [OUTPUT]
         Name          opentelemetry
-        Match         kube.*
+        Match         *
         Host          opentelemetry-collector.dev.svc.cluster.local
         Port          3030
         metrics_uri          /v1/metrics
@@ -54,21 +64,21 @@ data:
         tls.verify           off
         # add user-defined labels
         add_label            app fluent-bit
-        add_label            color blue
-    # [OUTPUT]
-    #     Name                 opentelemetry
-    #     Match                source.docker.*
-    #     Host                 opentelemetry-collector.dev.svc.cluster.local
-    #     Port                 3030
-    #     metrics_uri          /v1/metrics
-    #     logs_uri             /v1/logs
-    #     traces_uri           /v1/traces
-    #     Log_response_payload True
-    #     tls                  off
-    #     tls.verify           off
-    #     # add user-defined labels
-    #     add_label            app fluent-bit
-    #     add_label            color blue
+
+    [OUTPUT]
+        Name                 opentelemetry
+        Match                kube.dev.kbot.*
+        Host                 opentelemetry-collector.dev.svc.cluster.local
+        Port                 3030
+        metrics_uri          /v1/metrics
+        logs_uri             /v1/logs
+        traces_uri           /v1/traces
+        Log_response_payload True
+        tls                  off
+        tls.verify           off
+        # add user-defined labels
+        add_label            app kbot
+
 ---
 apiVersion: apps/v1
 kind: DaemonSet
@@ -116,6 +126,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: fluentbit
+  namespace: dev
 spec:
   selector:
     app: fluentbit
